@@ -1,11 +1,16 @@
 import type { NextConfig } from "next";
+import bundleAnalyzer from '@next/bundle-analyzer';
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const nextConfig: NextConfig = {
   eslint: {
-    ignoreDuringBuilds: true, // Ignores ESLint issues during build
+    ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true, // Ignore TypeScript errors during build
+    ignoreBuildErrors: true,
   },
   publicRuntimeConfig: {
     apiUrl: process.env.NEXT_PUBLIC_API_URL,
@@ -21,29 +26,26 @@ const nextConfig: NextConfig = {
       console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
     }
 
-    // Optimize chunk splitting to stay below Cloudflare's 25 MiB limit per file
     config.optimization.splitChunks = {
       chunks: 'all',
-      maxSize: 10 * 1024 * 1024, // 10 MiB per chunk
+      maxSize: 10 * 1024 * 1024, // Try breaking up large chunks to avoid 25MB
       cacheGroups: {
         defaultVendors: {
           test: /[\\/]node_modules[\\/]/,
           priority: -10,
           reuseExistingChunk: true,
-          filename: 'static/chunks/vendor-[name].js',
         },
         default: {
           minChunks: 2,
           priority: -20,
           reuseExistingChunk: true,
-          filename: 'static/chunks/common-[name].js',
         },
       },
     };
 
     return config;
   },
-  productionBrowserSourceMaps: false, // Disable source maps for smaller bundles
+  productionBrowserSourceMaps: false,
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
